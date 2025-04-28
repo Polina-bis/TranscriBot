@@ -81,8 +81,15 @@ class DbHelper:
         self.cursor.execute(request, tuple(params.values()))
         self.connection.commit()
 
-    def get_user_history(self, user_id: int) -> list:
-        pass
+    def get_printable_user_history(self, user_id: int) -> list[tuple]:
+        request = """select uh.date, c.rus_equivalent as operation_type, c2.rus_equivalent as source_type, uh.source_link 
+                        from user_history uh 
+                        join codes c on uh.operation_type = c.code_name
+                        join codes c2 on uh.source_type = c2.code_name
+                        where uh.user_id = {};""".format(user_id)
+
+        self.cursor.execute(request)
+        return self.cursor.fetchall()
 
     def __close(self):
         self.cursor.close()
@@ -91,8 +98,5 @@ class DbHelper:
 
 if __name__ == '__main__':
     db_helper = DbHelper()
-    db_helper.insert_row('test', {'column': 1, 'value': 'abc'})
-    db_helper.update_row('test', {'column': 2}, {'value': 'h'})
-    row = db_helper.select_rows('test', ['value'], {'column': 1})
-    print(row)
-    db_helper.delete_rows('test', {'value': 'h'})
+    user_history = db_helper.get_printable_user_history(5732193791)
+    print(user_history)
