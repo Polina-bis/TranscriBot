@@ -17,7 +17,8 @@ async def start(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(keyboard=kb)
 
     message_text = """
-  Привет! Я бот для транскрибации и суммаризации аудио и видео.
+Привет! Я бот для транскрибации и суммаризации аудио и видео.
+  
 Отправь мне: 
     - Ссылку на YouTube видео  
     - Голосовое сообщение  

@@ -3,7 +3,7 @@ from aiogram import Bot, Dispatcher
 
 from handlers import start
 from src.handlers.settings import settings
-from src.handlers.summ_and_transcrib import basic_interaction
+from src.handlers.summ_and_transcrib import voices
 
 
 """
@@ -21,7 +21,7 @@ dp = Dispatcher()
 async def main():
     dp.include_router(start.router)
     dp.include_router(settings.router)
-    dp.include_router(basic_interaction.router)
+    dp.include_router(voices.router)
 
     await dp.start_polling(bot)
 
