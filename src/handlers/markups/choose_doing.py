@@ -15,7 +15,7 @@ def markup_choose_doing(tokens: int) -> InlineKeyboardMarkup:
     )
     chancel = types.InlineKeyboardButton(
         text="❌ Отмена",
-        callback_data="chancel"
+        callback_data="cancel"
     )
     markup.add(transcribe, summ, chancel)
     markup.adjust(1, 1, 1)
