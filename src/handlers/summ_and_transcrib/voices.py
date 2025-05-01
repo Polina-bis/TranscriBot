@@ -1,4 +1,6 @@
 import math
+import time
+
 from aiogram import types, Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import FSInputFile
@@ -12,17 +14,34 @@ from src.states.voice_states import VoicesStates
 
 router = Router()
 
+
 @router.message(F.text.endswith("Голосовое сообщение"))
 async def start_voices(message: types.Message, state: FSMContext):
-    await message.answer(voice_texts["start_voices"])
+    # Инициализируем список для хранения ID сообщений
+    await state.update_data(message_ids=[message.message_id])
+    answer = await message.answer(voice_texts["start_voices"])
+    # Добавляем ID нового сообщения в state
+    data = await state.get_data()
+    message_ids = data.get("message_ids", [])
+    message_ids.append(answer.message_id)
+    await state.update_data(message_ids=message_ids)
     await state.set_state(VoicesStates.wait_voice)
 
 
 @router.message(F.voice, VoicesStates.wait_voice)
 async def download_voices(message: types.Message, state: FSMContext, bot: Bot):
+    # Добавляем ID голосового сообщения в state
+    data = await state.get_data()
+    message_ids = data.get("message_ids", [])
+    message_ids.append(message.message_id)
+    await state.update_data(message_ids=message_ids)
+
     # проверка, что гс не менее 1 мин
     if message.voice.duration < 60:
-        await message.answer(voice_texts["too_long"])
+        answer = await message.answer(voice_texts["too_long"])
+        # Добавляем ID нового сообщения в state
+        message_ids.append(answer.message_id)
+        await state.update_data(message_ids=message_ids)
         await state.set_state(VoicesStates.wait_voice)
         return
 
@@ -35,12 +54,21 @@ async def download_voices(message: types.Message, state: FSMContext, bot: Bot):
     tokens = math.ceil(message.voice.duration / 60)
     await state.update_data({"tokens": tokens})
 
-    await message.answer(voice_texts["choose_doing"], reply_markup=markup_choose_doing(tokens))
+    answer = await message.answer(voice_texts["choose_doing"], reply_markup=markup_choose_doing(tokens))
+    # Добавляем ID нового сообщения в state
+    message_ids.append(answer.message_id)
+    await state.update_data(message_ids=message_ids)
     await state.set_state(VoicesStates.wait_doing)
 
 
 @router.message(VoicesStates.wait_voice)
 async def download_voices(message: types.Message, state: FSMContext):
+    # Добавляем ID сообщения в state
+    data = await state.get_data()
+    message_ids = data.get("message_ids", [])
+    message_ids.append(message.message_id)
+    await state.update_data(message_ids=message_ids)
+
     markup = InlineKeyboardBuilder()
     chancel = types.InlineKeyboardButton(
         text="❌ Отмена",
@@ -48,50 +76,62 @@ async def download_voices(message: types.Message, state: FSMContext):
     )
     markup.add(chancel)
 
-    await message.answer(voice_texts["wrong_media"], reply_markup=markup.as_markup())
+    answer = await message.answer(voice_texts["wrong_media"], reply_markup=markup.as_markup())
+    # Добавляем ID нового сообщения в state
+    message_ids.append(answer.message_id)
+    await state.update_data(message_ids=message_ids)
     await state.set_state(VoicesStates.wait_voice)
 
 
-@router.callback_query(F.data.in_({"transcribe", "summ"}) , VoicesStates.wait_doing)
+@router.callback_query(F.data.in_({"transcribe", "summ"}), VoicesStates.wait_doing)
 async def process_voices(callback: types.CallbackQuery, state: FSMContext):
-    # TODO запрос на оставшееся кол во токенов у пользователя
-    current_tokens = 120
     data = await state.get_data()
     tokens = data["tokens"]
+    current_tokens = 120  # TODO: Заменить на реальную проверку токенов
 
-    # не хватает токенов
-    if callback.message.text == "transcribe":
-        if current_tokens < tokens:
-            text = create_answer_not_enough_tokens(current_tokens, tokens)
-            await callback.message.answer(text)
-            await state.clear()
-            return
-    elif callback.message.text == "summ":
-        if current_tokens < 2 * tokens:
-            text = create_answer_not_enough_tokens(current_tokens, 2 * tokens)
-            await callback.message.answer(text)
-            await state.clear()
-            return
+    # Определяем нужное количество токенов
+    required_tokens = tokens * 2 if callback.data == "summ" else tokens
 
-    # TODO видео засовываем в очередь
-    position = 2
+    if current_tokens < required_tokens:
+        # Редактируем сообщение с кнопками вместо отправки нового
+        text = create_answer_not_enough_tokens(current_tokens, required_tokens)
+        await callback.message.edit_text(text)
+        await state.clear()
+        return
+
+    # Редактируем сообщение с информацией об очереди
+    position = 2  # TODO: Реальная позиция в очереди
     text = create_answer_message_in_queue(position)
-    await callback.message.answer(text) # сообщение об ожидании в очереди
+    await callback.message.edit_text(text)
+    time.sleep(5)
 
     # TODO обработка гс:
     #     здесь хотелось бы универсальную функцию где указываешь что хочешь сделать
     #     и ссылку на файл источник и она сует в очередь и выплелывает путь файла результата
-    result_file = "src/data/cash/youtube/transcrib/c5Nh4g8zwyo"
+    result_file = "src/data/cash/youtube/transcrib/c5Nh4g8zwyo.txt"
     with open(result_file, 'r', encoding='utf-8') as file:
         result = file.read()
-        if len(text) <= 4096: # проверка вместится ли результат в сообщение
-            await callback.message.answer(result)
+        if len(result) <= 4096:
+            await callback.message.edit_text(result)
         else:
-            # Отправляем файл, если текст слишком длинный
+            # Если текст слишком длинный
+            await callback.message.edit_text(voice_texts["long_answer"])
             file = FSInputFile(result_file)
-            await callback.message.answer_document(file, caption=voice_texts["long_answer"])
+            await callback.message.answer_document(file)
+    await state.clear()
 
 
-@router.callback_query(F.text == "cancel", VoicesStates.wait_doing)
-async def cancel(callback: types.CallbackQuery, state: FSMContext):
+@router.callback_query(F.data == "cancel")
+async def cancel(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
+    # Получаем список ID сообщений из state
+    data = await state.get_data()
+    message_ids = data.get("message_ids", [])
+
+    # Удаляем все сообщения
+    for message_id in message_ids:
+        try:
+            await bot.delete_message(chat_id=callback.message.chat.id, message_id=message_id)
+        except Exception as e:
+            print(f"Не удалось удалить сообщение {message_id}: {e}")
+
     await state.clear()
