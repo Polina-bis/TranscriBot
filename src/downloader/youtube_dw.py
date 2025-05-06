@@ -29,7 +29,7 @@ class YouTubeDownloader(Downloader):
         # считаем длину видео
         last_entry = transcript[-1]
         video_length_seconds = last_entry['start'] + last_entry['duration']
-        video_length_minutes = video_length_seconds / 60
+        video_length_minutes = int(video_length_seconds / 60)
 
         if not os.path.exists(directory):
             os.makedirs(directory)
