@@ -1,5 +1,6 @@
 from asyncio import run
 from aiogram import Bot, Dispatcher
+import logging
 
 from handlers import start
 from src.handlers.settings import settings
@@ -17,6 +18,7 @@ from src.handlers.summ_and_transcrib import basic_interaction
 TOKEN = "7457335914:AAGhfck6-tKL0pmeOsSxwLNxBHkEUU8oypo"
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
+logging.basicConfig(level=logging.INFO)
 
 async def main():
     dp.include_router(start.router)
