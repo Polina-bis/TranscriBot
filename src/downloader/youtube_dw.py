@@ -21,10 +21,15 @@ class YouTubeDownloader(Downloader):
     
         raise ValueError(f"Could not extract video ID from URL: {youtube_url}")
     
-    def download_source(self, directory: str, source: str) -> str:
+    def download_source(self, directory: str, source: str) -> (str, int):
         video_id = self.__extract_video_id(source)
         transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=["en", "ru"])
         subtitles = ' '.join([entry['text'] for entry in transcript])
+
+        # считаем длину видео
+        last_entry = transcript[-1]
+        video_length_seconds = last_entry['start'] + last_entry['duration']
+        video_length_minutes = video_length_seconds / 60
 
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -38,7 +43,7 @@ class YouTubeDownloader(Downloader):
             with open(full_path, 'w', encoding='utf-8') as f:
                 f.write(subtitles)
 
-        return full_path
+        return full_path, video_length_minutes
 
 
 if __name__ == "__main__":

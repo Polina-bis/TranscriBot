@@ -9,9 +9,9 @@ async def start(message: types.Message):
     user_id = message.from_user.id
 
     kb = [
-        [types.KeyboardButton(text="Видео на Ютуб")],
-        [types.KeyboardButton(text="Голосовое сообщение")],
-        [types.KeyboardButton(text="Видеосообщение")],
+        [types.KeyboardButton(text="🎥 Видео на Ютуб")],
+        [types.KeyboardButton(text="🎤 Голосовое сообщение")],
+        [types.KeyboardButton(text="📹 Видеосообщение")],
         [types.KeyboardButton(text="👤 Личный кабинет")]
     ]
     keyboard = types.ReplyKeyboardMarkup(keyboard=kb)

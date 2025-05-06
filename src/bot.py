@@ -3,7 +3,7 @@ from aiogram import Bot, Dispatcher
 
 from handlers import start
 from src.handlers.settings import settings
-from src.handlers.summ_and_transcrib import voices, circles
+from src.handlers.summ_and_transcrib import voices, circles, youtube
 
 """
 Заметка Полине:
@@ -22,6 +22,7 @@ async def main():
     dp.include_router(settings.router)
     dp.include_router(voices.router)
     dp.include_router(circles.router)
+    dp.include_router(youtube.router)
 
     await dp.start_polling(bot)
 
