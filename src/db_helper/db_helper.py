@@ -50,12 +50,15 @@ class DbHelper:
             self.connection.commit()
 
     def insert_row(self, table_name: str, params: dict) -> None:
-        request = f"""INSERT INTO "{table_name}" 
-                        ({', '.join([f'"{key}"' for key in params])}) 
-                        VALUES ({', '.join(['%s'] * len(params))})"""
+        try:
+            request = f"""INSERT INTO "{table_name}" 
+                            ({', '.join([f'"{key}"' for key in params])}) 
+                            VALUES ({', '.join(['%s'] * len(params))})"""
 
-        self.cursor.execute(request, tuple(params.values()))
-        self.connection.commit()
+            self.cursor.execute(request, tuple(params.values()))
+            self.connection.commit()
+        except psycopg2.errors.UniqueViolation:
+            pass
 
     def update_row(self, table_name: str, key_params: dict, new_params: dict) -> None:
         request = f"""UPDATE "{table_name}" SET
@@ -98,5 +101,5 @@ class DbHelper:
 
 if __name__ == '__main__':
     db_helper = DbHelper()
-    user_history = db_helper.get_printable_user_history(5732193791)
-    print(user_history)
+    db_helper.insert_row('test', {'column': 2, 'value': 'two'})
+
