@@ -3,7 +3,7 @@ from aiogram import Bot, Dispatcher
 import logging
 
 from handlers import start
-from src.handlers.settings import settings
+from src.handlers.settings.settings import settings_router
 from src.handlers.summ_and_transcrib import basic_interaction
 
 
@@ -22,9 +22,10 @@ logging.basicConfig(level=logging.INFO)
 
 async def main():
     dp.include_router(start.router)
-    dp.include_router(settings.router)
+    dp.include_router(settings_router)
     dp.include_router(basic_interaction.router)
 
+    await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
 
