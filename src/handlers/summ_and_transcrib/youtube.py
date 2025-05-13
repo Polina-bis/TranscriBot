@@ -1,4 +1,4 @@
-import math
+import datetime
 import time
 
 from aiogram import types, Router, F, Bot
@@ -6,6 +6,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import FSInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from src.db_helper.db_helper import DbHelper
 from src.downloader.youtube_dw import YouTubeDownloader
 from src.filter.is_youtube_link import YoutubeLinkFilter
 from src.handlers.markups.choose_doing import markup_choose_doing
@@ -77,7 +78,13 @@ async def download_youtube(message: types.Message, state: FSMContext):
 async def process_youtube(callback: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     tokens = data["tokens"]
-    current_tokens = 120  # TODO: Заменить на реальную проверку токенов
+
+    db_helper = DbHelper()
+    current_tokens = db_helper.select_rows(
+        "users",
+        ["tokens_amount"],
+        {"user_id": callback.message.from_user.id}
+    )[0][0]
 
     # Определяем нужное количество токенов
     required_tokens = tokens * 2 if callback.data == "summ" else tokens
@@ -93,6 +100,7 @@ async def process_youtube(callback: types.CallbackQuery, state: FSMContext):
     position = 2  # TODO: Реальная позиция в очереди
     text = create_answer_message_in_queue(position)
     await callback.message.edit_text(text)
+    time.sleep(5)
 
     if callback.data == "transcribe":
         result_file = data["youtube_path"]
@@ -109,6 +117,24 @@ async def process_youtube(callback: types.CallbackQuery, state: FSMContext):
             await callback.message.edit_text(youtube_texts["long_answer"])
             file = FSInputFile(result_file)
             await callback.message.answer_document(file)
+
+    # снимаем со счета пользователя
+    db_helper.update_row(
+        "users",
+        {"user_id": callback.message.from_user.id},
+        {"tokens_amount": current_tokens - required_tokens}
+    )
+
+    # записываем историю поиска
+    history_param = {
+        "user_id": callback.message.from_user.id,
+        "date": datetime.date.today(),
+        "operation_type": "tran" if callback.data == "transcribe" else "summ",
+        "source_type": "yt",
+        "source_link": result_file
+    }
+    db_helper.insert_row("user_history", history_param)
+
     await state.clear()
 
 

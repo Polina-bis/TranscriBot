@@ -1,3 +1,6 @@
+import datetime
+import time
+
 import psycopg2
 
 
@@ -15,13 +18,49 @@ _create_table_queries = [
     result_format CHAR(8) REFERENCES codes(code_name)
     );""",
     """CREATE TABLE if not exists user_history (
-    record_id BIGINT PRIMARY KEY,
+    record_id BIGSERIAL PRIMARY KEY,
     user_id BIGSERIAL REFERENCES users(user_id),
     date DATE,
     operation_type CHAR(8) REFERENCES codes(code_name),
     source_type CHAR(8) REFERENCES codes(code_name),
     source_link TEXT
     );""",
+    """INSERT INTO codes (code_name, code_type, rus_equivalent)
+    SELECT 'summ', 'operation_type', 'Суммаризация'
+    WHERE NOT EXISTS (SELECT 1 FROM codes);""",
+    """
+    INSERT INTO codes (code_name, code_type, rus_equivalent)
+    SELECT 'tran', 'operation_type', 'Транскрибация'
+    WHERE NOT EXISTS (SELECT 1 FROM codes);""",
+    """
+    INSERT INTO codes (code_name, code_type, rus_equivalent)
+    SELECT 'yt', 'source_type', 'YouTube'
+    WHERE NOT EXISTS (SELECT 1 FROM codes);""",
+    """
+    INSERT INTO codes (code_name, code_type, rus_equivalent)
+    SELECT 'vm', 'source_type', 'Голосовое'
+    WHERE NOT EXISTS (SELECT 1 FROM codes);""",
+    """
+    INSERT INTO codes (code_name, code_type, rus_equivalent)
+    SELECT 'cr', 'source_type', 'Кружочек'
+    WHERE NOT EXISTS (SELECT 1 FROM codes);""",
+    """
+    INSERT INTO codes (code_name, code_type, rus_equivalent)
+    SELECT 'rus', 'transcription_language', 'Русский язык'
+    WHERE NOT EXISTS (SELECT 1 FROM codes);""",
+    """
+    INSERT INTO codes (code_name, code_type, rus_equivalent)
+    SELECT 'eng', 'transcription_language', 'Английский язык'
+    WHERE NOT EXISTS (SELECT 1 FROM codes);""",
+    """
+    INSERT INTO codes (code_name, code_type, rus_equivalent)
+    SELECT 'text', 'result format', 'Текст'
+    WHERE NOT EXISTS (SELECT 1 FROM codes);""",
+    """
+    INSERT INTO codes (code_name, code_type, rus_equivalent)
+    SELECT 'doc', 'result format', 'Документ'
+    WHERE NOT EXISTS (SELECT 1 FROM codes);
+    """,
     """CREATE TABLE if not exists youtube_cash (
     youtube_link TEXT PRIMARY KEY NOT NULL,
     date DATE,
@@ -100,3 +139,40 @@ if __name__ == '__main__':
     db_helper = DbHelper()
     user_history = db_helper.get_printable_user_history(5732193791)
     print(user_history)
+
+    base_param_user = {
+        "user_id": 5732193791,
+        "tokens_amount": 120,
+        "notifications_status": 1,
+        "transcription_language": "rus",
+        "result_format": "text",
+    }
+    db_helper.insert_row("users", base_param_user)
+    # current_tokens = db_helper.select_rows(
+    #     "users",
+    #     ["tokens_amount"],
+    #     {"user_id": 5732193791}
+    # )
+    # print(current_tokens[0][0])
+    #
+    # db_helper.update_row(
+    #     "users",
+    #     {"user_id": 5732193791},
+    #     {"tokens_amount": 118}
+    # )
+    # current_tokens = db_helper.select_rows(
+    #     "users",
+    #     ["tokens_amount"],
+    #     {"user_id": 5732193791}
+    # )
+    # print(current_tokens[0][0])
+
+    history_param = {
+        "user_id": 5732193791,
+        "date": datetime.date.today(),
+        "operation_type": "tran",
+        "source_type": "yt",
+        "source_link": "src/data/cash/youtube/transcrib/c5Nh4g8zwyo.txt"
+    }
+    db_helper.insert_row("user_history", history_param)
+

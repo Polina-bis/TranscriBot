@@ -1,12 +1,24 @@
 from aiogram import types, Router
 from aiogram.filters import Command
 
+from src.db_helper.db_helper import DbHelper
+
 router = Router()
 
 @router.message(Command('start'))
 async def start(message: types.Message):
-    # TODO создаем пользователя
+    # создаем пользователя
     user_id = message.from_user.id
+    base_param_user = {
+        "user_id": user_id,
+        "tokens_amount": 120,
+        "notifications_status": 1,
+        "transcription_language": "rus",
+        "result_format": "text",
+    }
+
+    db_helper = DbHelper()
+    # db_helper.insert_row("users", base_param_user)
 
     kb = [
         [types.KeyboardButton(text="🎥 Видео на Ютуб")],
@@ -25,7 +37,7 @@ async def start(message: types.Message):
     - Кружочек (видеосообщение) 
     
 Я преобразую аудио в текст или сделаю краткое содержание.  
-Доступно токенов: 120 (это ~120 минут аудио)
+В день доступно токенов: 120 (это ~120 минут аудио)
     """
 
     await message.answer(text=message_text, reply_markup=keyboard)
