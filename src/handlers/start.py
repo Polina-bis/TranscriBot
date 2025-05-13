@@ -18,7 +18,7 @@ async def start(message: types.Message):
     }
 
     db_helper = DbHelper()
-    # db_helper.insert_row("users", base_param_user)
+    db_helper.insert_row("users", base_param_user)
 
     kb = [
         [types.KeyboardButton(text="🎥 Видео на Ютуб")],
