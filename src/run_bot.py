@@ -2,9 +2,9 @@ from asyncio import run
 from aiogram import Bot, Dispatcher
 import logging
 
-from src.run_bot.handlers import start
-from src.run_bot.handlers.settings.settings import settings_router
-from src.run_bot.handlers.summ_and_transcrib import circles, voices, youtube
+from src.bot.handlers import start
+from src.bot.handlers.settings.settings import settings_router
+from src.bot.handlers.summ_and_transcrib import circles, voices, youtube
 
 """
 Заметка Полине:
