@@ -49,7 +49,7 @@ async def download_voices(message: types.Message, state: FSMContext, bot: Bot):
 
     # скачиваем гс
     downloader = VoiceDownloader(bot)
-    file_path = await downloader.download_source("src/data/cash/voices", message.voice.file_id)
+    file_path = await downloader.download_source("../../src/data/cash/voices", message.voice.file_id)
     # сохраняем путь до гс
     await state.update_data({"voice_path": file_path})
 
@@ -94,7 +94,7 @@ async def process_voices(callback: types.CallbackQuery, state: FSMContext):
     current_tokens = db_helper.select_rows(
         "users",
         ["tokens_amount"],
-        {"user_id": callback.message.from_user.id}
+        {"user_id": callback.message.chat.id}
     )[0][0]
 
     # Определяем нужное количество токенов
@@ -130,13 +130,13 @@ async def process_voices(callback: types.CallbackQuery, state: FSMContext):
     # снимаем со счета пользователя
     db_helper.update_row(
         "users",
-        {"user_id": callback.message.from_user.id},
+        {"user_id": callback.message.chat.id},
         {"tokens_amount": current_tokens - required_tokens}
     )
 
     # записываем историю поиска
     history_param = {
-        "user_id": callback.message.from_user.id,
+        "user_id": callback.message.chat.id,
         "date": datetime.date.today(),
         "operation_type": "tran" if callback.data == "transcribe" else "summ",
         "source_type": "vm",

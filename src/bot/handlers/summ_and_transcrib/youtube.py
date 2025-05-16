@@ -40,7 +40,7 @@ async def download_youtube(message: types.Message, state: FSMContext, bot: Bot):
 
     # скачиваем
     downloader = YouTubeDownloader()
-    file_path, length_video = downloader.download_source("../src/data/cash/youtube/transcrib", message.text)
+    file_path, length_video = downloader.download_source("../../src/data/cash/youtube/transcrib", message.text)
     # сохраняем путь
     await state.update_data({"youtube_path": file_path})
     await state.update_data({"tokens": length_video})
