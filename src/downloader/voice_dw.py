@@ -7,7 +7,7 @@ class VoiceDownloader(Downloader):
     def __init__(self, bot):
         self.bot: Bot = bot
 
-    def download_source(self, directory: str, source_id: str) -> str:
+    async def download_source(self, directory: str, source_id: str) -> str:
         # проверяем есть ли папка, в которую хотим сохранить
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -17,7 +17,7 @@ class VoiceDownloader(Downloader):
         if os.path.exists(full_path):
             print(f"Файл {full_path} уже существует!")
         else:
-            self.bot.download(source_id, destination=full_path)
+            await self.bot.download(source_id, destination=full_path)
 
         return full_path
 

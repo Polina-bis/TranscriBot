@@ -1,3 +1,6 @@
+import datetime
+import time
+
 import psycopg2
 
 
@@ -15,13 +18,49 @@ _create_table_queries = [
     result_format CHAR(8) REFERENCES codes(code_name)
     );""",
     """CREATE TABLE if not exists user_history (
-    record_id BIGINT PRIMARY KEY,
+    record_id BIGSERIAL PRIMARY KEY,
     user_id BIGSERIAL REFERENCES users(user_id),
     date DATE,
     operation_type CHAR(8) REFERENCES codes(code_name),
     source_type CHAR(8) REFERENCES codes(code_name),
     source_link TEXT
     );""",
+    """INSERT INTO codes (code_name, code_type, rus_equivalent)
+    SELECT 'summ', 'operation_type', 'Суммаризация'
+    WHERE NOT EXISTS (SELECT 1 FROM codes);""",
+    """
+    INSERT INTO codes (code_name, code_type, rus_equivalent)
+    SELECT 'tran', 'operation_type', 'Транскрибация'
+    WHERE NOT EXISTS (SELECT 1 FROM codes);""",
+    """
+    INSERT INTO codes (code_name, code_type, rus_equivalent)
+    SELECT 'yt', 'source_type', 'YouTube'
+    WHERE NOT EXISTS (SELECT 1 FROM codes);""",
+    """
+    INSERT INTO codes (code_name, code_type, rus_equivalent)
+    SELECT 'vm', 'source_type', 'Голосовое'
+    WHERE NOT EXISTS (SELECT 1 FROM codes);""",
+    """
+    INSERT INTO codes (code_name, code_type, rus_equivalent)
+    SELECT 'cr', 'source_type', 'Кружочек'
+    WHERE NOT EXISTS (SELECT 1 FROM codes);""",
+    """
+    INSERT INTO codes (code_name, code_type, rus_equivalent)
+    SELECT 'rus', 'transcription_language', 'Русский язык'
+    WHERE NOT EXISTS (SELECT 1 FROM codes);""",
+    """
+    INSERT INTO codes (code_name, code_type, rus_equivalent)
+    SELECT 'eng', 'transcription_language', 'Английский язык'
+    WHERE NOT EXISTS (SELECT 1 FROM codes);""",
+    """
+    INSERT INTO codes (code_name, code_type, rus_equivalent)
+    SELECT 'text', 'result format', 'Текст'
+    WHERE NOT EXISTS (SELECT 1 FROM codes);""",
+    """
+    INSERT INTO codes (code_name, code_type, rus_equivalent)
+    SELECT 'doc', 'result format', 'Документ'
+    WHERE NOT EXISTS (SELECT 1 FROM codes);
+    """,
     """CREATE TABLE if not exists youtube_cash (
     youtube_link TEXT PRIMARY KEY NOT NULL,
     date DATE,

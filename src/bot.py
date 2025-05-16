@@ -4,8 +4,7 @@ import logging
 
 from handlers import start
 from src.handlers.settings.settings import settings_router
-from src.handlers.summ_and_transcrib import basic_interaction
-
+from src.handlers.summ_and_transcrib import voices, circles, youtube
 
 """
 Заметка Полине:
@@ -23,7 +22,9 @@ logging.basicConfig(level=logging.INFO)
 async def main():
     dp.include_router(start.router)
     dp.include_router(settings_router)
-    dp.include_router(basic_interaction.router)
+    dp.include_router(voices.router)
+    dp.include_router(circles.router)
+    dp.include_router(youtube.router)
 
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
