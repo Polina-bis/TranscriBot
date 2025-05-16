@@ -26,7 +26,7 @@ async def start(message: types.Message):
         [types.KeyboardButton(text="📹 Видеосообщение")],
         [types.KeyboardButton(text="👤 Личный кабинет")]
     ]
-    keyboard = types.ReplyKeyboardMarkup(keyboard=kb)
+    keyboard = types.ReplyKeyboardMarkup(keyboard=kb, input_field_placeholder='Воспользуйтесь меню:')
 
     message_text = """
 Привет! Я бот для транскрибации и суммаризации аудио и видео.

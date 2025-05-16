@@ -89,12 +89,15 @@ class DbHelper:
             self.connection.commit()
 
     def insert_row(self, table_name: str, params: dict) -> None:
-        request = f"""INSERT INTO "{table_name}" 
-                        ({', '.join([f'"{key}"' for key in params])}) 
-                        VALUES ({', '.join(['%s'] * len(params))})"""
+        try:
+            request = f"""INSERT INTO "{table_name}" 
+                            ({', '.join([f'"{key}"' for key in params])}) 
+                            VALUES ({', '.join(['%s'] * len(params))})"""
 
-        self.cursor.execute(request, tuple(params.values()))
-        self.connection.commit()
+            self.cursor.execute(request, tuple(params.values()))
+            self.connection.commit()
+        except psycopg2.errors.UniqueViolation:
+            pass
 
     def update_row(self, table_name: str, key_params: dict, new_params: dict) -> None:
         request = f"""UPDATE "{table_name}" SET
@@ -137,42 +140,5 @@ class DbHelper:
 
 if __name__ == '__main__':
     db_helper = DbHelper()
-    user_history = db_helper.get_printable_user_history(5732193791)
-    print(user_history)
-
-    base_param_user = {
-        "user_id": 5732193791,
-        "tokens_amount": 120,
-        "notifications_status": 1,
-        "transcription_language": "rus",
-        "result_format": "text",
-    }
-    db_helper.insert_row("users", base_param_user)
-    # current_tokens = db_helper.select_rows(
-    #     "users",
-    #     ["tokens_amount"],
-    #     {"user_id": 5732193791}
-    # )
-    # print(current_tokens[0][0])
-    #
-    # db_helper.update_row(
-    #     "users",
-    #     {"user_id": 5732193791},
-    #     {"tokens_amount": 118}
-    # )
-    # current_tokens = db_helper.select_rows(
-    #     "users",
-    #     ["tokens_amount"],
-    #     {"user_id": 5732193791}
-    # )
-    # print(current_tokens[0][0])
-
-    history_param = {
-        "user_id": 5732193791,
-        "date": datetime.date.today(),
-        "operation_type": "tran",
-        "source_type": "yt",
-        "source_link": "src/data/cash/youtube/transcrib/c5Nh4g8zwyo.txt"
-    }
-    db_helper.insert_row("user_history", history_param)
+    db_helper.insert_row('test', {'column': 2, 'value': 'two'})
 
