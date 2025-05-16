@@ -1,5 +1,4 @@
 import datetime
-import math
 import time
 
 from aiogram import types, Router, F, Bot
@@ -9,10 +8,10 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from src.db_helper.db_helper import DbHelper
 from src.downloader.circle_dw import CircleDownloader
-from src.handlers.markups.choose_doing import markup_choose_doing
-from src.handlers.summ_and_transcrib.message_text import create_answer_not_enough_tokens, \
+from src.bot.handlers.markups.choose_doing import markup_choose_doing
+from src.bot.handlers.summ_and_transcrib.message_text import create_answer_not_enough_tokens, \
     create_answer_message_in_queue, circle_texts
-from src.states.circle_states import CircleStates
+from src.bot.states.circle_states import CircleStates
 
 router = Router()
 

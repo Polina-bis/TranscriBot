@@ -1,8 +1,8 @@
-from aiogram import Router, F, Bot
+from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
-from src.handlers.settings.keyboards import *
+from src.bot.handlers.settings.keyboards import *
 from src.db_helper.db_helper import DbHelper
 from datetime import date
 
@@ -19,7 +19,7 @@ texts = {'profile_info': '👤 Ваш профиль:\n\n- Маскимальн�
 
 settings_router = Router()
 db = DbHelper()
-from src.bot import bot
+from src.run_bot import bot
 
 
 def get_user_profile_info(user_id: int) -> tuple:

@@ -9,10 +9,10 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from src.db_helper.db_helper import DbHelper
 from src.downloader.voice_dw import VoiceDownloader
-from src.handlers.markups.choose_doing import markup_choose_doing
-from src.handlers.summ_and_transcrib.message_text import voice_texts, create_answer_not_enough_tokens, \
+from src.bot.handlers.markups.choose_doing import markup_choose_doing
+from src.bot.handlers.summ_and_transcrib.message_text import voice_texts, create_answer_not_enough_tokens, \
     create_answer_message_in_queue
-from src.states.voice_states import VoicesStates
+from src.bot.states.voice_states import VoicesStates
 
 router = Router()
 

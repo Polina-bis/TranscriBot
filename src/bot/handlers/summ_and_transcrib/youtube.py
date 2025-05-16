@@ -8,11 +8,11 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from src.db_helper.db_helper import DbHelper
 from src.downloader.youtube_dw import YouTubeDownloader
-from src.filter.is_youtube_link import YoutubeLinkFilter
-from src.handlers.markups.choose_doing import markup_choose_doing
-from src.handlers.summ_and_transcrib.message_text import create_answer_not_enough_tokens, \
+from src.bot.filter.is_youtube_link import YoutubeLinkFilter
+from src.bot.handlers.markups.choose_doing import markup_choose_doing
+from src.bot.handlers.summ_and_transcrib.message_text import create_answer_not_enough_tokens, \
     create_answer_message_in_queue, youtube_texts
-from src.states.youtube_states import YoutubeStates
+from src.bot.states.youtube_states import YoutubeStates
 
 router = Router()
 
@@ -40,7 +40,7 @@ async def download_youtube(message: types.Message, state: FSMContext, bot: Bot):
 
     # скачиваем
     downloader = YouTubeDownloader()
-    file_path, length_video = downloader.download_source("src/data/cash/youtube/transcrib", message.text)
+    file_path, length_video = downloader.download_source("../src/data/cash/youtube/transcrib", message.text)
     # сохраняем путь
     await state.update_data({"youtube_path": file_path})
     await state.update_data({"tokens": length_video})
@@ -83,7 +83,7 @@ async def process_youtube(callback: types.CallbackQuery, state: FSMContext):
     current_tokens = db_helper.select_rows(
         "users",
         ["tokens_amount"],
-        {"user_id": callback.message.from_user.id}
+        {"user_id": callback.message.chat.id}
     )[0][0]
 
     # Определяем нужное количество токенов
@@ -121,13 +121,13 @@ async def process_youtube(callback: types.CallbackQuery, state: FSMContext):
     # снимаем со счета пользователя
     db_helper.update_row(
         "users",
-        {"user_id": callback.message.from_user.id},
+        {"user_id": callback.message.chat.id},
         {"tokens_amount": current_tokens - required_tokens}
     )
 
     # записываем историю поиска
     history_param = {
-        "user_id": callback.message.from_user.id,
+        "user_id": callback.message.chat.id,
         "date": datetime.date.today(),
         "operation_type": "tran" if callback.data == "transcribe" else "summ",
         "source_type": "yt",
